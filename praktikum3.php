@@ -1,4 +1,5 @@
 <?php
+session_start();
 
 class Produk {
 
@@ -10,7 +11,6 @@ class Produk {
     public function __construct($nama, $harga) {
         $this->nama = $nama;
         $this->harga = $harga;
-        self::$jumlahProduk++;
     }
 }
 
@@ -20,6 +20,26 @@ class Transaksi {
         echo "Transaksi diproses: " . $produk->nama . 
              " - Rp" . $produk->harga . "<br>";
     }
+}
+
+// inisialisasi session
+if (!isset($_SESSION['produk'])) {
+    $_SESSION['produk'] = [];
+}
+
+// 👉 HANDLE POST
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+    $nama = $_POST['nama'];
+    $harga = $_POST['harga'];
+
+    $produk = new Produk($nama, $harga);
+
+    $_SESSION['produk'][] = $produk;
+
+    // 🔥 REDIRECT biar gak double submit
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
 }
 
 ?>
@@ -43,35 +63,18 @@ class Transaksi {
 
 <?php
 
-// simpan produk dalam array (sementara)
-session_start();
-
-if (!isset($_SESSION['produk'])) {
-    $_SESSION['produk'] = [];
-}
-
-// jika form disubmit
-if (isset($_POST['nama'])) {
-
-    $nama = $_POST['nama'];
-    $harga = $_POST['harga'];
-
-    $produk = new Produk($nama, $harga);
-
-    $_SESSION['produk'][] = $produk;
-}
-
-// tampilkan semua produk
 echo "<h3>Daftar Produk:</h3>";
 
 $t = new Transaksi();
+
+// hitung total dari session (bukan static)
+$total = count($_SESSION['produk']);
 
 foreach ($_SESSION['produk'] as $p) {
     $t->prosesTransaksi($p);
 }
 
-// tampilkan total produk
-echo "<br><b>Total Produk: " . Produk::$jumlahProduk . "</b>";
+echo "<br><b>Total Produk: $total</b>";
 
 ?>
 
