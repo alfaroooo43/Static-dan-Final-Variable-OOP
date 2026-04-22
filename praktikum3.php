@@ -2,9 +2,6 @@
 session_start();
 
 class Produk {
-
-    public static $jumlahProduk = 0;
-
     public $nama;
     public $harga;
 
@@ -15,10 +12,9 @@ class Produk {
 }
 
 class Transaksi {
-
     final public function prosesTransaksi($produk) {
         echo "Transaksi diproses: " . $produk->nama . 
-             " - Rp" . $produk->harga . "<br>";
+             " - Rp" . $produk->harga;
     }
 }
 
@@ -27,17 +23,28 @@ if (!isset($_SESSION['produk'])) {
     $_SESSION['produk'] = [];
 }
 
-// 👉 HANDLE POST
+// 👉 TAMBAH PRODUK
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     $nama = $_POST['nama'];
     $harga = $_POST['harga'];
 
-    $produk = new Produk($nama, $harga);
+    $_SESSION['produk'][] = new Produk($nama, $harga);
 
-    $_SESSION['produk'][] = $produk;
+    // redirect biar gak double submit
+    header("Location: " . $_SERVER['PHP_SELF']);
+    exit();
+}
 
-    // 🔥 REDIRECT biar gak double submit
+// 👉 HAPUS PRODUK
+if (isset($_GET['hapus'])) {
+    $index = $_GET['hapus'];
+
+    unset($_SESSION['produk'][$index]);
+
+    // reindex array biar rapi
+    $_SESSION['produk'] = array_values($_SESSION['produk']);
+
     header("Location: " . $_SERVER['PHP_SELF']);
     exit();
 }
@@ -61,20 +68,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <hr>
 
-<?php
+<h3>Daftar Produk:</h3>
 
-echo "<h3>Daftar Produk:</h3>";
+<?php
 
 $t = new Transaksi();
 
-// hitung total dari session (bukan static)
-$total = count($_SESSION['produk']);
+if (count($_SESSION['produk']) > 0) {
 
-foreach ($_SESSION['produk'] as $p) {
-    $t->prosesTransaksi($p);
+    foreach ($_SESSION['produk'] as $i => $p) {
+
+        echo ($i+1) . ". ";
+        $t->prosesTransaksi($p);
+
+        // tombol hapus
+        echo " 
+        <a href='?hapus=$i' 
+        onclick=\"return confirm('Yakin hapus?')\">
+        Hapus</a><br>";
+    }
+
+    echo "<br><b>Total Produk: " . count($_SESSION['produk']) . "</b>";
+
+} else {
+    echo "Belum ada produk.";
 }
-
-echo "<br><b>Total Produk: $total</b>";
 
 ?>
 
