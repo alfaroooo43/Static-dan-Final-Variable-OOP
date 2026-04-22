@@ -7,6 +7,10 @@ class Pengunjung {
     public function __construct() {
         self::$jumlah++;
     }
+
+    public static function reset() {
+        self::$jumlah = 0;
+    }
 }
 
 // buat 5 object
@@ -16,7 +20,13 @@ $p3 = new Pengunjung();
 $p4 = new Pengunjung();
 $p5 = new Pengunjung();
 
-// tampilkan hasil
-echo "Jumlah Pengunjung: " . Pengunjung::$jumlah;
+// sebelum reset
+echo "Jumlah sebelum reset: " . Pengunjung::$jumlah . "<br>";
+
+// reset
+Pengunjung::reset();
+
+// sesudah reset
+echo "Jumlah sesudah reset: " . Pengunjung::$jumlah;
 
 ?>
